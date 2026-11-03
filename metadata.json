@@ -1,0 +1,6 @@
+{
+  "name": "aamraActive — First Corporate Boutique Gym in Dhaka",
+  "description": "Discover a new level of fitness at aamraActive, Dhaka's premier corporate boutique gym. Elevate your well-being with state-of-the-art facilities, personalized training, and a vibrant community.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
