@@ -1,0 +1,419 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import React, { useEffect, useState, useCallback } from 'react';
+import Lenis from 'lenis';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { Preloader } from './components/Preloader';
+import { Navbar } from './components/Navbar';
+import { Hero } from './components/Hero';
+import { Statement } from './components/Statement';
+import { Facts } from './components/Facts';
+import { FloorWalkthrough } from './components/FloorWalkthrough';
+import { Amenities } from './components/Amenities';
+import { Leadership } from './components/Leadership';
+import { Gallery } from './components/Gallery';
+import { Team } from './components/Team';
+import { Footer } from './components/Footer';
+import { VisitModal } from './components/VisitModal';
+import { StickyActions } from './components/StickyActions';
+import { Cursor } from './components/Cursor';
+import { Grain } from './components/Grain';
+import { PulseDivider } from './components/PulseDivider';
+
+gsap.registerPlugin(ScrollTrigger);
+
+export default function App() {
+  const [bookingOpen, setBookingOpen] = useState(false);
+  const [preloaderDone, setPreloaderDone] = useState(false);
+
+  const handlePreloaderComplete = useCallback(() => {
+    setPreloaderDone(true);
+    setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 100);
+  }, []);
+
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isAutostart = new URLSearchParams(window.location.search).get('autostart') === '1';
+    if (prefersReducedMotion || isAutostart) return;
+
+    const lenis = new Lenis({
+      duration: 1.15,
+      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+    });
+
+    lenis.on('scroll', ScrollTrigger.update);
+
+    const updateLenis = (time: number) => {
+      lenis.raf(time * 1000);
+    };
+
+    gsap.ticker.add(updateLenis);
+    gsap.ticker.lagSmoothing(0);
+
+    return () => {
+      gsap.ticker.remove(updateLenis);
+      lenis.destroy();
+    };
+  }, []);
+
+  const openBooking = () => setBookingOpen(true);
+  const closeBooking = () => setBookingOpen(false);
+
+  return (
+    <div className="min-h-screen bg-[#0A0A0A] text-[#F2F0EB] relative selection:bg-[var(--accent)] selection:text-white">
+      {/* Subtle Film Grain Overlay */}
+      <Grain />
+
+      {/* Custom Desktop Cursor */}
+      <Cursor />
+
+      {/* Preloader */}
+      <Preloader onComplete={handlePreloaderComplete} />
+
+      {/* Fixed Navigation Bar */}
+      <Navbar onOpenBooking={openBooking} />
+
+      {/* Main Continuous Scroll Experience */}
+      <main data-preloader-done={preloaderDone ? 'true' : 'false'}>
+        <Hero onOpenBooking={openBooking} />
+        <Statement />
+        <Facts />
+        <FloorWalkthrough onOpenBooking={openBooking} />
+        <Amenities />
+        <PulseDivider className="max-w-[1400px] mx-auto px-5 md:px-12" />
+        <Leadership />
+        <Gallery onOpenBooking={openBooking} />
+        <Team />
+      </main>
+
+      {/* Visit Section / Footer */}
+      <Footer onOpenBooking={openBooking} />
+
+      {/* Sticky Mobile Bottom Bar & Desktop Floating CTA */}
+      <StickyActions onOpenBooking={openBooking} />
+
+      {/* Slide-Up Conversion Modal */}
+      <VisitModal isOpen={bookingOpen} onClose={closeBooking} />
+    </div>
+  );
+}
+
+/**
+ * Centralised Asset & Content Configuration for aamraActive
+ *
+ * HOW TO CUSTOMISE:
+ * 1. Swap remote URLs for local files: change `BASE_URL` to `/images/` or replace any URL below.
+ * 2. Reassign photos to floors: edit the `image` property inside `FLOOR_STAGES`.
+ * 3. Change WhatsApp or phone numbers: update `CONTACT_INFO` below.
+ */
+
+export const BASE_URL = 'https://aamraactive.com/wp-content/uploads/';
+
+export const LOGO_URL = `${BASE_URL}2024/02/AAMRA-ACTIVE-LOGO-WHITE.png`;
+
+export const HERO_IMAGES = {
+  main: `${BASE_URL}2024/02/DSC04593-EDITED-1-scaled.webp`,
+  secondary: `${BASE_URL}2024/02/DSC04523-EDITED-jpg.webp`,
+  tertiary: `${BASE_URL}2024/02/IMG_1130-EDITED-1-jpg.webp`,
+};
+
+export const LEADERSHIP_IMAGE = `${BASE_URL}2025/09/Nibras-Panni-scaled.webp`;
+
+export const TEAM_IMAGES = {
+  trainers: `${BASE_URL}2024/02/DSC04450-EDITED-1-scaled.webp`,
+  admins: `${BASE_URL}2024/02/DSC04625-scaled.webp`,
+};
+
+export interface FloorStage {
+  id: string;
+  number: string;
+  levelLabel: string;
+  title: string;
+  description: string;
+  image: string;
+  buildingFloorIndex: number; // 0 = Reception (Ground), 1 = Main Gym, 2 = Women's Floor, 3 = Cardio Floor, 4 = Balcony
+}
+
+export const FLOOR_STAGES: FloorStage[] = [
+  {
+    id: 'reception',
+    number: '01',
+    levelLabel: 'Level 01 · Arrival',
+    title: 'Reception',
+    description:
+      'Step off the streets of Gulshan-2 into a welcoming, corporate-grade reception staffed by our devoted admin team.',
+    image: `${BASE_URL}2024/02/DSC04596-EDITED-jpg.webp`,
+    buildingFloorIndex: 0,
+  },
+  {
+    id: 'main-gym',
+    number: '02',
+    levelLabel: 'Level 02 · Strength & Conditioning',
+    title: 'Main Gym Floor',
+    description:
+      'A fully equipped strength and functional training floor featuring modern facilities, free weights, and personal training zones.',
+    image: `${BASE_URL}2024/02/DSC04523-EDITED-jpg.webp`,
+    buildingFloorIndex: 1,
+  },
+  {
+    id: 'womens-floor',
+    number: '03',
+    levelLabel: 'Level 03 · Privacy & Comfort',
+    title: "Women's Floor",
+    description:
+      'A dedicated ladies floor thoughtfully arranged for complete comfort, privacy, and focused full-body workouts.',
+    image: `${BASE_URL}2024/02/DSC04548-edit-20240216010409-scaled.webp`,
+    buildingFloorIndex: 2,
+  },
+  {
+    id: 'cardio-floor',
+    number: '04',
+    levelLabel: 'Level 04 · Endurance & Stamina',
+    title: 'Cardio Floor',
+    description:
+      'High-output endurance machines, punching bag stations, and conditioning equipment maintained in a hygienic environment.',
+    image: `${BASE_URL}2024/02/IMG_1130-EDITED-1-jpg.webp`,
+    buildingFloorIndex: 3,
+  },
+  {
+    id: 'balcony',
+    number: '05',
+    levelLabel: 'Rooftop · Unwind & Recover',
+    title: 'Balcony',
+    description:
+      'Finish your session and unwind in the open air on our signature balcony overlooking Gulshan-2.',
+    image: `${BASE_URL}2024/02/AUS06485-edit-20240216014617-jpg.webp`,
+    buildingFloorIndex: 4,
+  },
+];
+
+export interface GalleryPhoto {
+  id: number;
+  url: string;
+  alt: string;
+  aspect: 'tall' | 'wide' | 'square';
+}
+
+const GALLERY_FILENAMES: string[] = [
+  'A_H_3273-EDITED-1-jpg.webp',
+  'A_H_3277-jpg.webp',
+  'DSC04470-1-jpg.webp',
+  'DSC04479-1-jpg.webp',
+  'DSC04491-EDITED-jpg.webp',
+  'DSC04493-EDITED-jpg.webp',
+  'DSC04502-EDITED-jpg.webp',
+  'DSC04519-EDITED-jpg.webp',
+  'DSC04523-EDITED-jpg.webp',
+  'DSC04532-EDITED-jpg.webp',
+  'DSC04548-edit-20240216010409-scaled.webp',
+  'DSC04550-edit-20240216010447-scaled.webp',
+  'DSC04551-1-jpg.webp',
+  'DSC04556-1-scaled.webp',
+  'DSC04562-edit-20240216011649-jpg.webp',
+  'DSC04577-2-jpg.webp',
+  'DSC04580-1-jpg.webp',
+  'DSC04585-1-jpg.webp',
+  'DSC04591-2-jpg.webp',
+  'DSC04596-EDITED-jpg.webp',
+  'DSC04599-EDITED-jpg.webp',
+  'IMG_1130-EDITED-1-jpg.webp',
+  'AUS06485-edit-20240216014617-jpg.webp',
+  'AUS06486-jpg.webp',
+  'AUS06488-jpg.webp',
+  'AUS06489-jpg.webp',
+  'AUS06490-jpg.webp',
+  'AUS06492-jpg.webp',
+];
+
+const ASPECT_CYCLE: Array<'tall' | 'wide' | 'square'> = [
+  'wide',
+  'tall',
+  'square',
+  'wide',
+  'tall',
+  'wide',
+  'square',
+];
+
+export const GALLERY_IMAGES: GalleryPhoto[] = GALLERY_FILENAMES.map((filename, idx) => ({
+  id: idx + 1,
+  url: `${BASE_URL}2024/02/${filename}`,
+  alt: `aamraActive Corporate Boutique Gym in Gulshan-2 Dhaka — Photo ${String(idx + 1).padStart(2, '0')}`,
+  aspect: ASPECT_CYCLE[idx % ASPECT_CYCLE.length],
+}));
+
+export const CONTACT_INFO = {
+  name: 'aamraActive',
+  fullName: 'AAMRA ACTIVE',
+  addressLine1: 'House-8, Road-50, Gulshan-2',
+  addressLine2: '(Next to Quality Inn Hotel), Dhaka, Bangladesh',
+  fullAddress: 'AAMRA ACTIVE, House-8, Road-50, Gulshan-2 (Next to Quality Inn Hotel), Dhaka, Bangladesh',
+  phoneDisplay: '01731-003727',
+  phoneHref: 'tel:+8801731003727',
+  whatsappNumber: '8801731003727',
+  whatsappUrl: 'https://wa.me/8801731003727',
+  email: 'info@aamraactive.com',
+  facebook: 'https://www.facebook.com/aamraActive',
+  instagram: 'https://www.instagram.com/aamra_active/',
+  googleMapsUrl:
+    'https://www.google.com/maps/search/?api=1&query=' +
+    encodeURIComponent('aamraActive House 8 Road 50 Gulshan 2 Dhaka'),
+};
+
+export const AMENITIES_LIST = [
+  {
+    id: 'equipped',
+    title: 'Fully Equipped Gym',
+    description: 'Curated strength, free-weight, and conditioning machines across four purpose-built floors.',
+  },
+  {
+    id: 'training',
+    title: 'Personal Training',
+    description: 'One-on-one coaching from a well-trained team of trainers focused on your longevity.',
+  },
+  {
+    id: 'diet',
+    title: 'Diet Plan',
+    description: 'Structured nutrition guidance tailored to complement your training routine and wellness goals.',
+  },
+  {
+    id: 'ladies',
+    title: 'Dedicated Ladies Floor',
+    description: 'An entire floor reserved exclusively for women to train with privacy and confidence.',
+  },
+  {
+    id: 'punching',
+    title: 'Punching Bag',
+    description: 'Dedicated striking and boxing conditioning space for high-energy cardio sessions.',
+  },
+  {
+    id: 'facilities',
+    title: 'Modern Facilities',
+    description: 'Renovated interiors, climate-controlled floors, and a relaxing open-air balcony.',
+  },
+  {
+    id: 'lockers',
+    title: 'Lockers',
+    description: 'Clean, secure personal storage so you can transition effortlessly from office to workout.',
+  },
+  {
+    id: 'admin',
+    title: 'Devoted Admin Team',
+    description: 'Attentive front-desk and member care specialists committed to corporate etiquette.',
+  },
+] as const;
+
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --accent: #FF4D1C;
+  --accent-rgb: 255, 77, 28;
+  --bg-primary: #0A0A0A;
+  --bg-secondary: #141414;
+  --text-primary: #F2F0EB;
+  --text-muted: #A39E93;
+  --font-display: 'Anton', 'Bebas Neue', sans-serif;
+  --font-condensed: 'Bebas Neue', 'Anton', sans-serif;
+  --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+@layer base {
+  html {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+  }
+
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    overflow-x: hidden;
+  }
+}
+
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: 0.01em;
+}
+
+.font-condensed {
+  font-family: var(--font-condensed);
+  letter-spacing: 0.03em;
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+.font-mono-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.text-outline {
+  -webkit-text-stroke: 1.5px rgba(242, 240, 235, 0.28);
+  color: transparent;
+}
+
+.text-outline-accent {
+  -webkit-text-stroke: 1.5px var(--accent);
+  color: transparent;
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 18s linear infinite;
+}
+
+@keyframes grain-shift {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-2%, 2%); }
+  40% { transform: translate(2%, -2%); }
+  60% { transform: translate(-1%, -1%); }
+  80% { transform: translate(1%, 2%); }
+}
+
+.animate-grain {
+  animation: grain-shift 6s steps(6) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-spin-slow,
+  .animate-grain {
+    animation: none !important;
+  }
+}
+
+/* Hide scrollbar for horizontal gallery while preserving scrollability */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+
+import {createRoot} from 'react-dom/client';
+import App from './App.tsx';
+import './index.css';
+
+createRoot(document.getElementById('root')!).render(<App />);
